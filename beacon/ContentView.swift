@@ -1,74 +1,128 @@
 import SwiftUI
+import Combine
 import MapKit
 
+class MapSearch : NSObject, ObservableObject {
+    @Published var locationResults : [MKLocalSearchCompletion] = []
+    @Published var searchTerm = ""
+    
+    private var cancellables : Set<AnyCancellable> = []
+    
+    private var searchCompleter = MKLocalSearchCompleter()
+    private var currentPromise : ((Result<[MKLocalSearchCompletion], Error>) -> Void)?
+    
+    override init() {
+        super.init()
+        searchCompleter.delegate = self
+        
+        $searchTerm
+            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .flatMap({ (currentSearchTerm) in
+                self.searchTermToResults(searchTerm: currentSearchTerm)
+            })
+            .sink(receiveCompletion: { (completion) in
+                //handle error
+            }, receiveValue: { (results) in
+                self.locationResults = results
+            })
+            .store(in: &cancellables)
+    }
+    
+    func searchTermToResults(searchTerm: String) -> Future<[MKLocalSearchCompletion], Error> {
+        Future { promise in
+            self.searchCompleter.queryFragment = searchTerm
+            self.currentPromise = promise
+        }
+    }
+}
+
+extension MapSearch : MKLocalSearchCompleterDelegate {
+    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+            currentPromise?(.success(completer.results))
+        }
+    
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        //could deal with the error here, but beware that it will finish the Combine publisher stream
+        //currentPromise?(.failure(error))
+    }
+}
+
 struct ContentView: View {
-    @State private var address = ""
-    @State private var coordinate: CLLocationCoordinate2D?
+    @StateObject private var mapSearch = MapSearch()
     
     var body: some View {
-        VStack {
-            TextField("Enter address", text: $address)
-                .padding()
-            
-            MapView(coordinate: $coordinate, address: address)
-                .frame(height: 300)
-                .padding()
-            
-            if let coordinate = coordinate {
-                Text("Latitude: \(coordinate.latitude), Longitude: \(coordinate.longitude)")
-            }
+        NavigationView {
+            Form {
+                Section {
+                    TextField("Address", text: $mapSearch.searchTerm)
+                }
+                Section {
+                    ForEach(mapSearch.locationResults, id: \.self) { location in
+                        NavigationLink(destination: Detail(locationResult: location)) {
+                            VStack(alignment: .leading) {
+                                Text(location.title)
+                                Text(location.subtitle)
+                                    .font(.system(.caption))
+                            }
+                        }
+                    }
+                }
+            }.navigationTitle(Text("Address search"))
         }
     }
 }
 
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D?
-    let address: String
+class DetailViewModel : ObservableObject {
+    @Published var isLoading = true
+    @Published private var coordinate : CLLocationCoordinate2D?
+    @Published var region: MKCoordinateRegion = MKCoordinateRegion()
     
-    func makeUIView(context: Context) -> MKMapView {
-        let mapView = MKMapView()
-        mapView.delegate = context.coordinator
-        return mapView
+    var coordinateForMap : CLLocationCoordinate2D {
+        coordinate ?? CLLocationCoordinate2D()
     }
     
-    func updateUIView(_ view: MKMapView, context: Context) {
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(address) { placemarks, error in
-            guard let placemark = placemarks?.first, error == nil else {
-                print("Error: \(String(describing: error))")
-                return
+    func reconcileLocation(location: MKLocalSearchCompletion) {
+        let searchRequest = MKLocalSearch.Request(completion: location)
+        let search = MKLocalSearch(request: searchRequest)
+        search.start { (response, error) in
+            if error == nil, let coordinate = response?.mapItems.first?.placemark.coordinate {
+                self.coordinate = coordinate
+                self.region = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: 0.03, longitudeDelta: 0.03))
+                self.isLoading = false
             }
-            
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = placemark.location!.coordinate
-            view.removeAnnotations(view.annotations)
-            view.addAnnotation(annotation)
-            
-            coordinate = annotation.coordinate
         }
     }
     
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, MKMapViewDelegate {
-        var parent: MapView
-        
-        init(_ parent: MapView) {
-            self.parent = parent
-        }
-        
-        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: nil)
-            view.canShowCallout = true
-            return view
-        }
+    func clear() {
+        isLoading = true
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
+struct Detail : View {
+    var locationResult : MKLocalSearchCompletion
+    @StateObject private var viewModel = DetailViewModel()
+    
+    struct Marker: Identifiable {
+        let id = UUID()
+        var location: MapMarker
+    }
+    
+    var body: some View {
+        Group {
+            if viewModel.isLoading {
+                Text("Loading...")
+            } else {
+                Map(coordinateRegion: $viewModel.region,
+                    annotationItems: [Marker(location: MapMarker(coordinate: viewModel.coordinateForMap))]) { (marker) in
+                    marker.location
+                }
+            }
+        }.onAppear {
+            viewModel.reconcileLocation(location: locationResult)
+        }.onDisappear {
+            viewModel.clear()
+        }
+        .navigationTitle(Text(locationResult.title))
     }
 }
