@@ -10,15 +10,16 @@ import Combine
 import MapKit
 
 struct ContentView: View {
-    @State private var coordinate = CLLocationCoordinate2D()
+    @State private var coordinate = CLLocationCoordinate2D(latitude: 43.0, longitude: -89.0)
     @State private var annotation = MKPointAnnotation()
     @State private var showAddressSearch = false
+    @State private var resetMap = false
     @StateObject private var mapSearch = MapSearch()
     @State private var selectedLocation: MKLocalSearchCompletion?
 
     var body: some View {
         ZStack(alignment: .top) {
-            MapView(coordinate: $coordinate, annotation: $annotation)
+            MapView(coordinate: $coordinate, annotation: $annotation, resetMap: $resetMap)
                 .edgesIgnoringSafeArea(.all)
                 Spacer()
                     if showAddressSearch {
@@ -56,9 +57,11 @@ struct ContentView: View {
                                 .clipShape(Circle())
                         }
                         Button(action: {
-                            mapView?.setRegion(<#T##MKCoordinateRegion#>, animated: <#T##Bool#>)
+                            resetMap = true
+                            self.coordinate = CLLocationCoordinate2D(latitude: 43.0, longitude: -89.0)
+                            self.annotation = MKPointAnnotation()
                         }) {
-                            Image(systemName: "keyboard.badge.eye")
+                            Image(systemName: "gobackward")
                                 .foregroundColor(.white)
                                 .padding()
                                 .background(Color.blue)
@@ -88,10 +91,9 @@ struct ContentView: View {
         let search = MKLocalSearch(request: searchRequest)
         search.start { (response, error) in
             if error == nil, let coordinate = response?.mapItems.first?.placemark.coordinate {
+                annotation = MKPointAnnotation(__coordinate: coordinate, title: location.title, subtitle: location.subtitle)
                 self.coordinate = coordinate
-                self.annotation.coordinate = coordinate
-                self.annotation.title = location.title
-                self.annotation.subtitle = location.subtitle
+                self.annotation = annotation
             }
         }
     }

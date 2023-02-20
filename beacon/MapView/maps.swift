@@ -13,9 +13,11 @@ import MapKit
 struct MapView: UIViewRepresentable {
     @Binding var coordinate: CLLocationCoordinate2D
     @Binding var annotation: MKPointAnnotation
+    @Binding var resetMap: Bool
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
+        mapView.showsUserLocation = true
         mapView.delegate = context.coordinator
         mapView.addGestureRecognizer(UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.mapLongPressed(gestureRecognizer:))))
         return mapView
@@ -24,6 +26,12 @@ struct MapView: UIViewRepresentable {
     func updateUIView(_ view: MKMapView, context: Context) {
         view.removeAnnotations(view.annotations)
         view.addAnnotation(annotation)
+        if coordinate.latitude == 43.0 {
+            let coordinateRegion = MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 180, longitudeDelta: 360))
+           view.setRegion(coordinateRegion, animated: true)
+        }
   }
     
     func makeCoordinator() -> Coordinator {
@@ -73,27 +81,18 @@ struct MapView: UIViewRepresentable {
             if let annotationView = views.first {
                 annotationView.setSelected(true, animated: true)
                 if let annotation = annotationView.annotation {
-                    if annotation.title != "Dropped Pin" {
-                        let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: 5000, longitudinalMeters: 5000)
+                    if annotation.coordinate.latitude != -0.0 {
+                        var meters = 5000.0
+                        if annotation.title == "Dropped pin" {
+                            meters = 1000.0
+                        }
+                        let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: meters, longitudinalMeters: meters)
                         mapView.setRegion(region, animated: true)
                     }
                 }
             }
             
         }
-        
-//        func mapView(_ mapView: MKMapView, didChange views: [MKAnnotationView]) {
-//            if let annotationView = views.first {
-//                annotationView.setSelected(true, animated: true)
-//                if let annotation = annotationView.annotation {
-//                    if annotation.title != "Dropped Pin" {
-//                        let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: 5000, longitudinalMeters: 5000)
-//                        mapView.setRegion(region, animated: true)
-//                    }
-//                }
-//            }
-//            
-//        }
     }
 }
 
