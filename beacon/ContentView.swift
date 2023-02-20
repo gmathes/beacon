@@ -48,31 +48,6 @@ extension MapSearch : MKLocalSearchCompleterDelegate {
     }
 }
 
-struct ContentView: View {
-    @StateObject private var mapSearch = MapSearch()
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section {
-                    TextField("Address", text: $mapSearch.searchTerm)
-                }
-                Section {
-                    ForEach(mapSearch.locationResults, id: \.self) { location in
-                        NavigationLink(destination: Detail(locationResult: location)) {
-                            VStack(alignment: .leading) {
-                                Text(location.title)
-                                Text(location.subtitle)
-                                    .font(.system(.caption))
-                            }
-                        }
-                    }
-                }
-            }.navigationTitle(Text("Address search"))
-        }
-    }
-}
-
 class DetailViewModel : ObservableObject {
     @Published var isLoading = true
     @Published private var coordinate : CLLocationCoordinate2D?
@@ -126,3 +101,77 @@ struct Detail : View {
         .navigationTitle(Text(locationResult.title))
     }
 }
+
+
+struct ContentView: View {
+    @StateObject private var mapSearch = MapSearch()
+    @State private var selectedLocation: MKLocalSearchCompletion?
+    var body: some View {
+        NavigationView {
+            ZStack {
+                
+                VStack {
+                    Spacer()
+                    Form {
+                        Section {
+                            TextField("Address", text: $mapSearch.searchTerm)
+                        }
+                        Section {
+                            ForEach(mapSearch.locationResults, id: \.self) { location in
+                                Button(action: {
+                                    selectedLocation = location
+                                }) {
+                                    VStack(alignment: .leading) {
+                                        Text(location.title)
+                                        Text(location.subtitle)
+                                            .font(.system(.caption))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .background(Color.white.opacity(0.7))
+                    .frame(height: 400)
+                }
+                
+                if let coordinate = selectedLocation {
+                    Text("Place: \(coordinate.title)")
+                }
+                
+                MapView(location: selectedLocation)
+                    .frame(height: 400)
+                    .edgesIgnoringSafeArea(.all)
+            }
+        }
+    }
+}
+
+struct MapView: View {
+    @StateObject private var viewModel = DetailViewModel()
+    var location: MKLocalSearchCompletion?
+    
+    struct Marker: Identifiable {
+        let id = UUID()
+        var location: MapMarker
+    }
+    
+    var body: some View {
+        Group {
+            if viewModel.isLoading {
+                Text("Loading...")
+            } else {
+                Map(coordinateRegion: $viewModel.region,
+                    annotationItems: [Marker(location: MapMarker(coordinate: viewModel.coordinateForMap))]) { (marker) in
+                    marker.location
+                }
+            }
+        }.onAppear {
+            if let location = location {
+                viewModel.reconcileLocation(location: location)
+            }
+        }.onDisappear {
+            viewModel.clear()
+        }
+    }
+}
+
