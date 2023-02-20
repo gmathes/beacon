@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C914F0B929A3065700D20C02 /* maps.swift in Sources */ = {isa = PBXBuildFile; fileRef = C914F0B829A3065700D20C02 /* maps.swift */; };
 		C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE2296BC52900093D3C /* AppDelegate.swift */; };
 		C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE4296BC52900093D3C /* ContentView.swift */; };
 		C9A6CFE7296BC52900093D3C /* Experience.rcproject in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE6296BC52900093D3C /* Experience.rcproject */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C914F0B829A3065700D20C02 /* maps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maps.swift; sourceTree = "<group>"; };
 		C9A6CFDF296BC52900093D3C /* beacon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = beacon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9A6CFE2296BC52900093D3C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C9A6CFE4296BC52900093D3C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -73,6 +75,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C914F0B729A3063C00D20C02 /* MapView */ = {
+			isa = PBXGroup;
+			children = (
+				C914F0B829A3065700D20C02 /* maps.swift */,
+			);
+			path = MapView;
+			sourceTree = "<group>";
+		};
 		C9A6CFD6296BC52900093D3C = {
 			isa = PBXGroup;
 			children = (
@@ -96,6 +106,7 @@
 		C9A6CFE1296BC52900093D3C /* beacon */ = {
 			isa = PBXGroup;
 			children = (
+				C914F0B729A3063C00D20C02 /* MapView */,
 				C9A6CFE2296BC52900093D3C /* AppDelegate.swift */,
 				C9A6CFE4296BC52900093D3C /* ContentView.swift */,
 				C9A6CFE6296BC52900093D3C /* Experience.rcproject */,
@@ -262,6 +273,7 @@
 			files = (
 				C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */,
 				C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */,
+				C914F0B929A3065700D20C02 /* maps.swift in Sources */,
 				C9A6CFE7296BC52900093D3C /* Experience.rcproject in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
