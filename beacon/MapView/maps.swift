@@ -13,7 +13,6 @@ import MapKit
 struct MapView: UIViewRepresentable {
     @Binding var coordinate: CLLocationCoordinate2D
     @Binding var annotation: MKPointAnnotation
-    @Binding var resetMap: Bool
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -26,11 +25,12 @@ struct MapView: UIViewRepresentable {
     func updateUIView(_ view: MKMapView, context: Context) {
         view.removeAnnotations(view.annotations)
         view.addAnnotation(annotation)
-        if coordinate.latitude == 43.0 {
+        if coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
             let coordinateRegion = MKCoordinateRegion(
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 180, longitudeDelta: 360))
            view.setRegion(coordinateRegion, animated: true)
+           view.removeAnnotations(view.annotations)
         }
   }
     

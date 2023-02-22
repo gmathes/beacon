@@ -13,13 +13,12 @@ struct ContentView: View {
     @State private var coordinate = CLLocationCoordinate2D(latitude: 43.0, longitude: -89.0)
     @State private var annotation = MKPointAnnotation()
     @State private var showAddressSearch = false
-    @State private var resetMap = false
     @StateObject private var mapSearch = MapSearch()
     @State private var selectedLocation: MKLocalSearchCompletion?
 
     var body: some View {
         ZStack(alignment: .top) {
-            MapView(coordinate: $coordinate, annotation: $annotation, resetMap: $resetMap)
+            MapView(coordinate: $coordinate, annotation: $annotation)
                 .edgesIgnoringSafeArea(.all)
                 Spacer()
                     if showAddressSearch {
@@ -57,7 +56,6 @@ struct ContentView: View {
                                 .clipShape(Circle())
                         }
                         Button(action: {
-                            resetMap = true
                             self.coordinate = CLLocationCoordinate2D(latitude: 43.0, longitude: -89.0)
                             self.annotation = MKPointAnnotation()
                         }) {
@@ -73,7 +71,8 @@ struct ContentView: View {
                 VStack {
                     Spacer()
                     Button(action: {
-                        self.showAddressSearch = true
+                        NavigationLink(destination: ARPinView(destinationLocation: $coordinate)) {
+                        }
                     }) {
                         Image(systemName: "camera.viewfinder")
                             .foregroundColor(.white)
