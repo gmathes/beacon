@@ -13,12 +13,21 @@ import MapKit
 struct MapView: UIViewRepresentable {
     @Binding var coordinate: CLLocationCoordinate2D
     @Binding var annotation: MKPointAnnotation
+    @Binding var recenterTrigger: Bool
+    @Binding var userLocation: CLLocationCoordinate2D?
+    @Binding var destinationName: String
+    @Binding var hasSelectedDestination: Bool
+    var onMapTapped: () -> Void
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.showsUserLocation = true
         mapView.delegate = context.coordinator
         mapView.addGestureRecognizer(UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.mapLongPressed(gestureRecognizer:))))
+
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.mapTapped))
+        mapView.addGestureRecognizer(tapGesture)
+
         return mapView
     }
 
@@ -32,6 +41,15 @@ struct MapView: UIViewRepresentable {
            view.setRegion(coordinateRegion, animated: true)
            view.removeAnnotations(view.annotations)
         }
+
+        // Handle recenter trigger
+        if context.coordinator.lastRecenterTrigger != recenterTrigger {
+            context.coordinator.lastRecenterTrigger = recenterTrigger
+            if let userLocation = view.userLocation.location?.coordinate {
+                let region = MKCoordinateRegion(center: userLocation, latitudinalMeters: 1000, longitudinalMeters: 1000)
+                view.setRegion(region, animated: true)
+            }
+        }
   }
     
     func makeCoordinator() -> Coordinator {
@@ -40,6 +58,7 @@ struct MapView: UIViewRepresentable {
 
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: MapView
+        var lastRecenterTrigger: Bool = false
 
         init(_ parent: MapView) {
             self.parent = parent
@@ -49,11 +68,35 @@ struct MapView: UIViewRepresentable {
             if gestureRecognizer.state == .began {
                 let mapView = gestureRecognizer.view as! MKMapView
                 let coordinate = mapView.convert(gestureRecognizer.location(in: mapView), toCoordinateFrom: mapView)
+
+                // Set initial values
                 parent.coordinate = coordinate
                 parent.annotation.coordinate = coordinate
                 parent.annotation.title = "Dropped pin"
-                parent.annotation.subtitle = "Latitude: \(coordinate.latitude.rounded()) Longitude: \(coordinate.longitude.rounded())"
+                parent.annotation.subtitle = "Lat: \(coordinate.latitude.rounded()), Lon: \(coordinate.longitude.rounded())"
+
+                // Reverse geocode to get location name
+                let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                let geocoder = CLGeocoder()
+                geocoder.reverseGeocodeLocation(location) { placemarks, error in
+                    if let placemark = placemarks?.first {
+                        let name = placemark.name ?? "Dropped pin"
+                        DispatchQueue.main.async {
+                            self.parent.annotation.title = name
+                            self.parent.destinationName = name
+                            self.parent.hasSelectedDestination = true
+                        }
+                    }
+                }
             }
+        }
+
+        @objc func mapTapped() {
+            parent.onMapTapped()
+        }
+
+        func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+            parent.userLocation = userLocation.coordinate
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {

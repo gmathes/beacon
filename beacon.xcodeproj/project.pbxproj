@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C9114D242E90B80E006F4D90 /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9114D222E90B80E006F4D90 /* LaunchScreen.swift */; };
+		C9114D252E90B80E006F4D90 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */; };
 		C914F0B929A3065700D20C02 /* maps.swift in Sources */ = {isa = PBXBuildFile; fileRef = C914F0B829A3065700D20C02 /* maps.swift */; };
 		C914F0BC29A4315900D20C02 /* ARView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C914F0BB29A4315900D20C02 /* ARView.swift */; };
 		C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE2296BC52900093D3C /* AppDelegate.swift */; };
@@ -37,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C9114D222E90B80E006F4D90 /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
+		C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C914F0B829A3065700D20C02 /* maps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maps.swift; sourceTree = "<group>"; };
 		C914F0BB29A4315900D20C02 /* ARView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARView.swift; sourceTree = "<group>"; };
 		C9A6CFDF296BC52900093D3C /* beacon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = beacon.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +120,8 @@
 		C9A6CFE1296BC52900093D3C /* beacon */ = {
 			isa = PBXGroup;
 			children = (
+				C9114D222E90B80E006F4D90 /* LaunchScreen.swift */,
+				C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */,
 				C914F0BA29A4313D00D20C02 /* ArView */,
 				C914F0B729A3063C00D20C02 /* MapView */,
 				C9A6CFE2296BC52900093D3C /* AppDelegate.swift */,
@@ -216,7 +222,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					C9A6CFDE296BC52900093D3C = {
 						CreatedOnToolsVersion = 14.2;
@@ -256,6 +262,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9114D252E90B80E006F4D90 /* PrivacyInfo.xcprivacy in Resources */,
 				C9A6CFEC296BC52B00093D3C /* Preview Assets.xcassets in Resources */,
 				C9A6CFE9296BC52B00093D3C /* Assets.xcassets in Resources */,
 			);
@@ -284,6 +291,7 @@
 			files = (
 				C914F0BC29A4315900D20C02 /* ARView.swift in Sources */,
 				C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */,
+				C9114D242E90B80E006F4D90 /* LaunchScreen.swift in Sources */,
 				C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */,
 				C914F0B929A3065700D20C02 /* maps.swift in Sources */,
 				C9A6CFE7296BC52900093D3C /* Experience.rcproject in Sources */,
@@ -359,6 +367,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -373,7 +382,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -419,6 +428,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -427,7 +437,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -445,10 +455,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"beacon/Preview Content\"";
+				DEVELOPMENT_TEAM = C8F6CM66KF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
+				INFOPLIST_KEY_CFBundleDisplayName = "Beacon AR Navigator";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
@@ -476,10 +488,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"beacon/Preview Content\"";
+				DEVELOPMENT_TEAM = C8F6CM66KF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
+				INFOPLIST_KEY_CFBundleDisplayName = "Beacon AR Navigator";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
@@ -502,7 +516,6 @@
 		C9A6D009296BC52B00093D3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -521,7 +534,6 @@
 		C9A6D00A296BC52B00093D3C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -540,7 +552,6 @@
 		C9A6D00C296BC52B00093D3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -557,7 +568,6 @@
 		C9A6D00D296BC52B00093D3C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
