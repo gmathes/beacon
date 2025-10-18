@@ -161,14 +161,15 @@ struct ContentView: View {
 
                     Spacer()
                 }
-                    
-                    ControlGroup {
+
+                    HStack(spacing: 16) {
                         Button(action: {
                             self.showAddressSearch = true
                         }) {
                             Image(systemName: "magnifyingglass")
+                                .font(.system(size: 20))
                                 .foregroundColor(.white)
-                                .padding()
+                                .padding(16)
                                 .background(Color.blue)
                                 .clipShape(Circle())
                         }
@@ -176,11 +177,39 @@ struct ContentView: View {
                             recenterTrigger.toggle()
                         }) {
                             Image(systemName: "location.fill")
+                                .font(.system(size: 20))
                                 .foregroundColor(.white)
-                                .padding()
+                                .padding(16)
                                 .background(Color.blue)
                                 .clipShape(Circle())
                         }
+                        #if DEBUG
+                        Button(action: {
+                            // Set test beacon 100m north of current location
+                            if let userLoc = userLocation {
+                                // Move 100m north (~0.0009 degrees latitude)
+                                let testCoordinate = CLLocationCoordinate2D(
+                                    latitude: userLoc.latitude + 0.0009,
+                                    longitude: userLoc.longitude
+                                )
+                                self.coordinate = testCoordinate
+                                let testAnnotation = MKPointAnnotation()
+                                testAnnotation.coordinate = testCoordinate
+                                testAnnotation.title = "Test Beacon"
+                                testAnnotation.subtitle = "100m North"
+                                self.annotation = testAnnotation
+                                self.destinationName = "Test Beacon (100m N)"
+                                self.hasSelectedDestination = true
+                            }
+                        }) {
+                            Image(systemName: "target")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white)
+                                .padding(16)
+                                .background(Color.orange)
+                                .clipShape(Circle())
+                        }
+                        #endif
                         Button(action: {
                             self.coordinate = CLLocationCoordinate2D(latitude: 43.0, longitude: -89.0)
                             self.annotation = MKPointAnnotation()
@@ -188,12 +217,14 @@ struct ContentView: View {
                             self.destinationName = ""
                         }) {
                             Image(systemName: "gobackward")
+                                .font(.system(size: 20))
                                 .foregroundColor(.white)
-                                .padding()
+                                .padding(16)
                                 .background(Color.blue)
                                 .clipShape(Circle())
                         }
-                }
+                    }
+                    .padding(.top, 80)
             HStack {
                 Spacer()
                 VStack {
@@ -203,8 +234,8 @@ struct ContentView: View {
                             showARView = true
                         }) {
                             HStack {
-                                Image(systemName: "camera.viewfinder")
-                                Text("View in AR")
+                                Image(systemName: "location.north.circle.fill")
+                                Text("Show Beacon")
                             }
                             .foregroundColor(.white)
                             .padding()
@@ -245,7 +276,7 @@ struct ContentView: View {
         let search = MKLocalSearch(request: searchRequest)
         search.start { (response, error) in
             if error == nil, let coordinate = response?.mapItems.first?.placemark.coordinate {
-                annotation = MKPointAnnotation(__coordinate: coordinate, title: location.title, subtitle: location.subtitle)
+                annotation = MKPointAnnotation(coordinate: coordinate, title: location.title, subtitle: location.subtitle)
                 self.coordinate = coordinate
                 self.annotation = annotation
                 self.destinationName = location.title

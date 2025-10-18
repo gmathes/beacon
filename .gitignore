@@ -1,1 +1,4 @@
-beacon.xcodeproj/xcuserdata
+# Xcode user-specific files
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad
