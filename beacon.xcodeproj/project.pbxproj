@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C9114D242E90B80E006F4D90 /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9114D222E90B80E006F4D90 /* LaunchScreen.swift */; };
 		C9114D252E90B80E006F4D90 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */; };
 		C914F0B929A3065700D20C02 /* maps.swift in Sources */ = {isa = PBXBuildFile; fileRef = C914F0B829A3065700D20C02 /* maps.swift */; };
 		C914F0BC29A4315900D20C02 /* ARView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C914F0BB29A4315900D20C02 /* ARView.swift */; };
+		C91B5FAC2ECCDD6200665C1F /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C91B5FAB2ECCDD6200665C1F /* Launch Screen.storyboard */; };
 		C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE2296BC52900093D3C /* AppDelegate.swift */; };
 		C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE4296BC52900093D3C /* ContentView.swift */; };
-		C9A6CFE7296BC52900093D3C /* Experience.rcproject in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFE6296BC52900093D3C /* Experience.rcproject */; };
+		C9A6CFE7296BC52900093D3C /* Experience.rcproject in Resources */ = {isa = PBXBuildFile; fileRef = C9A6CFE6296BC52900093D3C /* Experience.rcproject */; };
 		C9A6CFE9296BC52B00093D3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9A6CFE8296BC52B00093D3C /* Assets.xcassets */; };
 		C9A6CFEC296BC52B00093D3C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9A6CFEB296BC52B00093D3C /* Preview Assets.xcassets */; };
 		C9A6CFF6296BC52B00093D3C /* beaconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFF5296BC52B00093D3C /* beaconTests.swift */; };
@@ -39,10 +39,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C9114D222E90B80E006F4D90 /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
 		C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C914F0B829A3065700D20C02 /* maps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maps.swift; sourceTree = "<group>"; };
 		C914F0BB29A4315900D20C02 /* ARView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARView.swift; sourceTree = "<group>"; };
+		C91B5FAB2ECCDD6200665C1F /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		C9A6CFDF296BC52900093D3C /* beacon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = beacon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9A6CFE2296BC52900093D3C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C9A6CFE4296BC52900093D3C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -120,7 +120,7 @@
 		C9A6CFE1296BC52900093D3C /* beacon */ = {
 			isa = PBXGroup;
 			children = (
-				C9114D222E90B80E006F4D90 /* LaunchScreen.swift */,
+				C91B5FAB2ECCDD6200665C1F /* Launch Screen.storyboard */,
 				C9114D232E90B80E006F4D90 /* PrivacyInfo.xcprivacy */,
 				C914F0BA29A4313D00D20C02 /* ArView */,
 				C914F0B729A3063C00D20C02 /* MapView */,
@@ -222,7 +222,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1610;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					C9A6CFDE296BC52900093D3C = {
 						CreatedOnToolsVersion = 14.2;
@@ -262,8 +262,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9A6CFE7296BC52900093D3C /* Experience.rcproject in Resources */,
 				C9114D252E90B80E006F4D90 /* PrivacyInfo.xcprivacy in Resources */,
 				C9A6CFEC296BC52B00093D3C /* Preview Assets.xcassets in Resources */,
+				C91B5FAC2ECCDD6200665C1F /* Launch Screen.storyboard in Resources */,
 				C9A6CFE9296BC52B00093D3C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,10 +293,8 @@
 			files = (
 				C914F0BC29A4315900D20C02 /* ARView.swift in Sources */,
 				C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */,
-				C9114D242E90B80E006F4D90 /* LaunchScreen.swift in Sources */,
 				C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */,
 				C914F0B929A3065700D20C02 /* maps.swift in Sources */,
-				C9A6CFE7296BC52900093D3C /* Experience.rcproject in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +387,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -441,6 +442,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -452,6 +454,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"beacon/Preview Content\"";
@@ -462,7 +465,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -485,6 +488,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"beacon/Preview Content\"";
@@ -495,7 +499,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

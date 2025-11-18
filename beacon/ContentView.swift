@@ -23,11 +23,13 @@ struct ContentView: View {
     @State private var hasSelectedDestination = false
     @State private var showLocationPermissionAlert = false
     @StateObject private var locationPermissionManager = LocationPermissionManager()
+    @State private var errorMessage: String?
+    @State private var showErrorAlert = false
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-            MapView(coordinate: $coordinate, annotation: $annotation, recenterTrigger: $recenterTrigger, userLocation: $userLocation, destinationName: $destinationName, hasSelectedDestination: $hasSelectedDestination, onMapTapped: {
+            MapView(coordinate: $coordinate, annotation: $annotation, recenterTrigger: $recenterTrigger, userLocation: $userLocation, destinationName: $destinationName, hasSelectedDestination: $hasSelectedDestination, errorMessage: $errorMessage, showErrorAlert: $showErrorAlert, onMapTapped: {
                 showAddressSearch = false
             })
                 .edgesIgnoringSafeArea(.all)
@@ -268,6 +270,11 @@ struct ContentView: View {
                     showLocationPermissionAlert = true
                 }
             }
+            .alert("Error", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage ?? "An unknown error occurred.")
+            }
         }
         }
     
@@ -275,12 +282,21 @@ struct ContentView: View {
         let searchRequest = MKLocalSearch.Request(completion: location)
         let search = MKLocalSearch(request: searchRequest)
         search.start { (response, error) in
-            if error == nil, let coordinate = response?.mapItems.first?.placemark.coordinate {
+            if let error = error {
+                self.errorMessage = "Failed to get location details: \(error.localizedDescription)"
+                self.showErrorAlert = true
+                return
+            }
+            
+            if let coordinate = response?.mapItems.first?.placemark.coordinate {
                 annotation = MKPointAnnotation(coordinate: coordinate, title: location.title, subtitle: location.subtitle)
                 self.coordinate = coordinate
                 self.annotation = annotation
                 self.destinationName = location.title
                 self.hasSelectedDestination = true
+            } else {
+                self.errorMessage = "Could not find a matching location."
+                self.showErrorAlert = true
             }
         }
     }

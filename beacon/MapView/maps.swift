@@ -17,6 +17,8 @@ struct MapView: UIViewRepresentable {
     @Binding var userLocation: CLLocationCoordinate2D?
     @Binding var destinationName: String
     @Binding var hasSelectedDestination: Bool
+    @Binding var errorMessage: String?
+    @Binding var showErrorAlert: Bool
     var onMapTapped: () -> Void
 
     func makeUIView(context: Context) -> MKMapView {
@@ -79,12 +81,25 @@ struct MapView: UIViewRepresentable {
                 let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
                 let geocoder = CLGeocoder()
                 geocoder.reverseGeocodeLocation(location) { placemarks, error in
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            self.parent.errorMessage = "Failed to get address: \(error.localizedDescription)"
+                            self.parent.showErrorAlert = true
+                        }
+                        return
+                    }
+                    
                     if let placemark = placemarks?.first {
                         let name = placemark.name ?? "Dropped pin"
                         DispatchQueue.main.async {
                             self.parent.annotation.title = name
                             self.parent.destinationName = name
                             self.parent.hasSelectedDestination = true
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            self.parent.errorMessage = "Could not find an address for this location."
+                            self.parent.showErrorAlert = true
                         }
                     }
                 }
@@ -159,6 +174,9 @@ class MapSearch : NSObject, ObservableObject {
                 self.searchTermToResults(searchTerm: currentSearchTerm)
             })
             .sink(receiveCompletion: { (completion) in
+                if case .failure(let error) = completion {
+                    print("Error searching for location: \(error.localizedDescription)")
+                }
             }, receiveValue: { (results) in
                 self.locationResults = results
             })
@@ -179,6 +197,7 @@ extension MapSearch : MKLocalSearchCompleterDelegate {
         }
     
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        currentPromise?(.failure(error))
     }
 }
 

@@ -1,20 +1,40 @@
-//
-//  ARView.swift
-//  beacon
-//
-//  Created by Gavin Mathes on 2/20/23.
-//
-
 import SwiftUI
 import RealityKit
 import ARKit
 import MapKit
 import CoreLocation
 
+// MARK: - ARSessionManager
+class ARSessionManager: NSObject, ObservableObject, ARSessionDelegate {
+    @Published var trackingState: ARCamera.TrackingState = .notAvailable
+    @Published var errorMessage: String?
+
+    let session = ARSession()
+
+    override init() {
+        super.init()
+        session.delegate = self
+    }
+
+    func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
+        DispatchQueue.main.async {
+            self.trackingState = camera.trackingState
+        }
+    }
+
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        DispatchQueue.main.async {
+            self.errorMessage = "AR Session Error: \(error.localizedDescription)"
+        }
+    }
+}
+
+// MARK: - ARPinView
 struct ARPinView: View {
     @Binding var destinationLocation: CLLocationCoordinate2D
     @StateObject private var locationDelegate = LocationDelegate()
-    @State private var isLoading = true
+    @StateObject private var arSessionManager = ARSessionManager()
+    @State private var showErrorAlert = false
 
     var body: some View {
         #if targetEnvironment(simulator)
@@ -31,91 +51,132 @@ struct ARPinView: View {
         }
         #else
         ZStack {
-            ARViewContainer(pinPosition: $locationDelegate.pinPosition, destinationLocation: destinationLocation)
-                .edgesIgnoringSafeArea(.all)
+            ARViewContainer(
+                pinPosition: $locationDelegate.pinPosition,
+                destinationLocation: destinationLocation,
+                arSessionManager: arSessionManager
+            )
+            .edgesIgnoringSafeArea(.all)
 
-            // AR Overlay with distance and bearing info - fixed at top
+            // AR Overlay with distance and bearing info
             VStack {
                 if locationDelegate.distance > 0 {
-                    VStack(spacing: 4) {
-                        Text(formatDistance(locationDelegate.distance))
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(distanceColor(locationDelegate.distance))
-                            .shadow(color: .black, radius: 2, x: 0, y: 1)
-
-                        Text("\(Int(locationDelegate.bearing))° \(bearingToDirection(locationDelegate.bearing))")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white)
-                            .shadow(color: .black, radius: 2, x: 0, y: 1)
-
-                        Text(distanceLabel(locationDelegate.distance))
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(.white.opacity(0.8))
-                            .shadow(color: .black, radius: 2, x: 0, y: 1)
-
-                        // Show warning if compass accuracy is poor
-                        if locationDelegate.headingAccuracy < 0 {
-                            Text("⚠️ Compass Invalid")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.red)
-                                .shadow(color: .black, radius: 2, x: 0, y: 1)
-                        } else if locationDelegate.headingAccuracy > 20 {
-                            Text("⚠️ Poor Compass - Go Outdoors")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.orange)
-                                .shadow(color: .black, radius: 2, x: 0, y: 1)
-                        }
-                    }
-                    .padding()
-                    .background(Color.black.opacity(0.6))
-                    .cornerRadius(12)
-                    .padding(.top, 60)
+                    arInfoOverlay
                 }
-
                 Spacer()
             }
 
-            // Loading screen
-            if isLoading {
-                ZStack {
-                    Color.black.opacity(0.8)
-                        .edgesIgnoringSafeArea(.all)
-
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
-
-                        Text("Initializing AR Session...")
-                            .font(.headline)
-                            .foregroundColor(.white)
-
-                        Text("Point your camera around to track your environment")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                    }
-                }
+            // Loading/Status screen
+            if arSessionManager.trackingState != .normal {
+                arStatusView
             }
         }
         .onAppear {
             locationDelegate.destinationLocation = destinationLocation
-            locationDelegate.startTracking()
-
-            // Hide loading screen after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation {
-                    isLoading = false
-                }
+            locationDelegate.onError = { error in
+                arSessionManager.errorMessage = error.localizedDescription
             }
+            locationDelegate.startTracking()
+            
+            let configuration = ARWorldTrackingConfiguration()
+            configuration.worldAlignment = .gravityAndHeading
+            arSessionManager.session.run(configuration)
         }
         .onDisappear {
             locationDelegate.stopTracking()
+            arSessionManager.session.pause()
+        }
+        .onChange(of: arSessionManager.errorMessage) { _, newValue in
+            showErrorAlert = newValue != nil
+        }
+        .alert("Error", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) {
+                arSessionManager.errorMessage = nil
+            }
+        } message: {
+            Text(arSessionManager.errorMessage ?? "An unknown error occurred.")
         }
         #endif
     }
 
+    private var arInfoOverlay: some View {
+        VStack(spacing: 4) {
+            Text(formatDistance(locationDelegate.distance))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(distanceColor(locationDelegate.distance))
+                .shadow(color: .black, radius: 2, x: 0, y: 1)
+
+            Text("\(Int(locationDelegate.bearing))° \(bearingToDirection(locationDelegate.bearing))")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .shadow(color: .black, radius: 2, x: 0, y: 1)
+
+            Text(distanceLabel(locationDelegate.distance))
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(.white.opacity(0.8))
+                .shadow(color: .black, radius: 2, x: 0, y: 1)
+
+            // Show warning if compass accuracy is poor
+            if locationDelegate.headingAccuracy < 0 {
+                Text("⚠️ Compass Invalid")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.red)
+                    .shadow(color: .black, radius: 2, x: 0, y: 1)
+            } else if locationDelegate.headingAccuracy > 20 {
+                Text("⚠️ Poor Compass - Go Outdoors")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .shadow(color: .black, radius: 2, x: 0, y: 1)
+            }
+        }
+        .padding()
+        .background(Color.black.opacity(0.6))
+        .cornerRadius(12)
+        .padding(.top, 60)
+    }
+
+    private var arStatusView: some View {
+        ZStack {
+            Color.black.opacity(0.8)
+                .edgesIgnoringSafeArea(.all)
+
+            VStack(spacing: 20) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .tint(.white)
+                
+                switch arSessionManager.trackingState {
+                case .notAvailable:
+                    Text("AR Session Not Available")
+                case .limited(let reason):
+                    Text("AR Session Limited")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    switch reason {
+                    case .excessiveMotion:
+                        Text("Move your device more slowly.")
+                    case .insufficientFeatures:
+                        Text("Point your device at a well-lit area with more details.")
+                    case .initializing:
+                         Text("Point your camera around to help the AR session initialize")
+                    case .relocalizing:
+                        Text("Relocalizing AR session...")
+                    @unknown default:
+                        Text("An unknown tracking error occurred.")
+                    }
+                case .normal:
+                    EmptyView()
+                }
+            }
+            .font(.caption)
+            .foregroundColor(.white.opacity(0.8))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 40)
+        }
+    }
+
+    // Helper functions for formatting
     private func formatDistance(_ distance: Double) -> String {
         if distance < 1000 {
             return "\(Int(distance))m"
@@ -132,16 +193,16 @@ struct ARPinView: View {
 
     private func distanceColor(_ distance: Double) -> Color {
         if distance < 100 {
-            return .green  // Very close
+            return .green
         } else if distance < 500 {
-            return .yellow  // Close
+            return .yellow
         } else if distance < 1000 {
-            return .orange  // Medium
+            return .orange
         } else {
-            return .red  // Far
+            return .red
         }
     }
-
+    
     private func distanceLabel(_ distance: Double) -> String {
         if distance < 100 {
             return "Very Close"
@@ -155,51 +216,27 @@ struct ARPinView: View {
     }
 }
 
+
+// MARK: - ARViewContainer
 struct ARViewContainer: UIViewRepresentable {
     @Binding var pinPosition: SIMD3<Float>
     let destinationLocation: CLLocationCoordinate2D
-
-    class Coordinator: NSObject {
-        var parent: ARViewContainer
-
-        init(_ parent: ARViewContainer) {
-            self.parent = parent
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
+    @ObservedObject var arSessionManager: ARSessionManager
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
+        arView.session = arSessionManager.session
+        arView.session.delegate = arSessionManager
 
-        // Configure AR session for better heading tracking
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.worldAlignment = .gravityAndHeading  // ARKit handles heading
-        configuration.planeDetection = []
-        arView.session.run(configuration)
-
-        print("🔵 AR Session started with worldAlignment=.gravityAndHeading")
-        print("🔵 Note: ARKit will use its own heading tracking, not device compass")
-
-        // add pin node to scene
         let pinNode = makePinNode()
         arView.scene.addAnchor(pinNode)
-        print("🔵 Pin node created and added to scene")
-        print("🔵 Initial pin position: \(pinPosition)")
 
         return arView
     }
 
     func updateUIView(_ uiView: ARView, context: Context) {
-        // update position of pin node
-        if !uiView.scene.anchors.isEmpty {
-            let anchor = uiView.scene.anchors[0]
+        if let anchor = uiView.scene.anchors.first {
             anchor.transform.translation = pinPosition
-            print("🔵 Pin position updated to: x=\(pinPosition.x), y=\(pinPosition.y), z=\(pinPosition.z)")
-        } else {
-            print("🔴 No anchors in scene!")
         }
     }
     
@@ -240,8 +277,9 @@ struct ARViewContainer: UIViewRepresentable {
     }
 }
 
+// MARK: - LocationDelegate
 class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
-    @Published var pinPosition: SIMD3<Float> = SIMD3<Float>(0, 0, -50)  // Start 50m in front
+    @Published var pinPosition: SIMD3<Float> = SIMD3<Float>(0, 0, -50)
     @Published var distance: Double = 0
     @Published var bearing: Double = 0
     @Published var headingAccuracy: Double = 0
@@ -249,24 +287,21 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     var destinationLocation: CLLocationCoordinate2D = CLLocationCoordinate2D()
     private var currentHeading: Double = 0
+    var onError: ((Error) -> Void)?
 
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.headingFilter = 1  // Update only when heading changes by 1 degree
-        print("🔵 LocationDelegate initialized - beacon at (0, 0, -50)")
+        locationManager.headingFilter = 1
     }
 
     func startTracking() {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         locationManager.startUpdatingHeading()
-        print("🔵 Started tracking - destination: \(destinationLocation.latitude), \(destinationLocation.longitude)")
 
-        // If we already have location, update immediately
         if let location = locationManager.location {
-            print("🔵 Initial location available")
             updatePinPosition(userLocation: location)
         }
     }
@@ -274,6 +309,10 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
     func stopTracking() {
         locationManager.stopUpdatingLocation()
         locationManager.stopUpdatingHeading()
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        onError?(error)
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -285,82 +324,34 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
         currentHeading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
         headingAccuracy = newHeading.headingAccuracy
 
-        print("🔵 Heading: \(Int(currentHeading))°, Accuracy: \(Int(newHeading.headingAccuracy))° \(newHeading.headingAccuracy < 0 ? "(INVALID)" : newHeading.headingAccuracy > 20 ? "(POOR)" : "(GOOD)")")
-
         if let userLocation = locationManager.location {
             updatePinPosition(userLocation: userLocation)
         }
     }
 
     func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
-        print("🔵 Compass calibration requested")
-        return true  // Show calibration screen if needed
+        return true
     }
 
     private func updatePinPosition(userLocation: CLLocation) {
         let destinationCLLocation = CLLocation(latitude: destinationLocation.latitude, longitude: destinationLocation.longitude)
         let distanceMeters = userLocation.distance(from: destinationCLLocation)
 
-        // Update published values
         self.distance = distanceMeters
         self.bearing = angleHeading(start: userLocation.coordinate, end: destinationLocation)
-
-        // Position the pin in the AR world based on the true bearing.
-        // The AR world is aligned with the real world's compass, so we use the
-        // bearing directly.
+        
         let bearingRadians = Float(bearing * .pi / 180)
+        let fixedDistance: Float = 50.0
 
-        // FIXED DISTANCE: Place beacon at a constant visible distance on the horizon
-        // Far enough to be stable with phone movement, close enough to be visible
-        let fixedDistance: Float = 50.0  // 50 meters in AR space - visible but stable
-
-        // Position pin on horizon at eye level
-        // ARKit coordinate system with .gravityAndHeading:
-        // - X: positive is EAST
-        // - Y: positive is UP
-        // - Z: positive is SOUTH (negative is NORTH)
-        //
-        // Bearing: 0° = North, 90° = East, 180° = South, 270° = West
-        //
-        // For bearing = 0° (North): x=0, z=-50
-        // For bearing = 90° (East):  x=50, z=0
-        // For bearing = 180° (South): x=0, z=50
-        // For bearing = 270° (West): x=-50, z=0
         let x = fixedDistance * sin(bearingRadians)
         let z = -fixedDistance * cos(bearingRadians)
-        let y: Float = 0  // Eye level
+        let y: Float = 0
 
         pinPosition = SIMD3<Float>(x, y, z)
-
-        // The relative bearing is still useful for UI display
-        let relativeBearing = bearing - currentHeading
-
-        print("🔵 Updated beacon: distance=\(Int(distanceMeters))m, bearing=\(Int(bearing))°, heading=\(Int(currentHeading))°, relative=\(Int(relativeBearing))°")
-        print("🔵 AR position: x=\(String(format: "%.2f", x)), y=\(String(format: "%.2f", y)), z=\(String(format: "%.2f", z))")
-
-        // Debug: show what direction this should be
-        let direction: String
-        if relativeBearing >= -22.5 && relativeBearing < 22.5 {
-            direction = "AHEAD"
-        } else if relativeBearing >= 22.5 && relativeBearing < 67.5 {
-            direction = "AHEAD-RIGHT"
-        } else if relativeBearing >= 67.5 && relativeBearing < 112.5 {
-            direction = "RIGHT"
-        } else if relativeBearing >= 112.5 && relativeBearing < 157.5 {
-            direction = "BEHIND-RIGHT"
-        } else if relativeBearing >= 157.5 || relativeBearing < -157.5 {
-            direction = "BEHIND"
-        } else if relativeBearing >= -157.5 && relativeBearing < -112.5 {
-            direction = "BEHIND-LEFT"
-        } else if relativeBearing >= -112.5 && relativeBearing < -67.5 {
-            direction = "LEFT"
-        } else {
-            direction = "AHEAD-LEFT"
-        }
-        print("🔵 Beacon should be: \(direction)")
     }
 }
 
+// MARK: - Helper Functions
 func angleHeading(start: CLLocationCoordinate2D, end: CLLocationCoordinate2D) -> Double {
     let startLat = start.latitude * Double.pi / 180
     let startLon = start.longitude * Double.pi / 180
@@ -374,10 +365,3 @@ func angleHeading(start: CLLocationCoordinate2D, end: CLLocationCoordinate2D) ->
     
     return (degrees + 360).truncatingRemainder(dividingBy: 360)
 }
-
-
-//struct ARView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ARPinView(destinationLocation: CLLocationCoordinate2D())
-//    }
-//}
