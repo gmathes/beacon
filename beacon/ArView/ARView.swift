@@ -243,35 +243,21 @@ struct ARViewContainer: UIViewRepresentable {
     private func makePinNode() -> AnchorEntity {
         let pinNode = AnchorEntity()
 
-        // Create a tall pin shape - like a map pin
-        // Top sphere (pin head)
-        let pinHead = MeshResource.generateSphere(radius: 1.5)
-        let headMaterial = SimpleMaterial(color: .systemCyan, roughness: 0.15, isMetallic: false)
-        let pinHeadModel = ModelEntity(mesh: pinHead, materials: [headMaterial])
-        pinHeadModel.position = SIMD3<Float>(0, 3, 0)  // Top of the pin
+        // Create a flag shape
+        // Flagpole (tall, thin cylinder)
+        let pole = MeshResource.generateCylinder(height: 10.0, radius: 0.2)
+        let poleMaterial = SimpleMaterial(color: .systemGray, roughness: 0.3, isMetallic: true)
+        let poleModel = ModelEntity(mesh: pole, materials: [poleMaterial])
+        poleModel.position = SIMD3<Float>(0, 0, 0)
 
-        // Pin shaft (long cylinder pointing down)
-        let shaft = MeshResource.generateCylinder(height: 6.0, radius: 0.3)
-        let shaftMaterial = SimpleMaterial(color: .systemCyan, roughness: 0.15, isMetallic: false)
-        let shaftModel = ModelEntity(mesh: shaft, materials: [shaftMaterial])
-        shaftModel.position = SIMD3<Float>(0, 0, 0)
+        // Flag (thin box)
+        let flag = MeshResource.generateBox(size: [5.0, 3.0, 0.1])
+        let flagMaterial = SimpleMaterial(color: .systemRed, roughness: 0.1, isMetallic: false)
+        let flagModel = ModelEntity(mesh: flag, materials: [flagMaterial])
+        flagModel.position = SIMD3<Float>(2.5, 3.5, 0) // Positioned at the top of the pole
 
-        // Pin point (small cone at bottom)
-        let point = MeshResource.generateCone(height: 2.0, radius: 0.4)
-        let pointMaterial = SimpleMaterial(color: .systemCyan, roughness: 0.15, isMetallic: false)
-        let pointModel = ModelEntity(mesh: point, materials: [pointMaterial])
-        pointModel.position = SIMD3<Float>(0, -4, 0)
-
-        // Glow ring around the pin head for visibility
-        let glowRing = MeshResource.generateBox(size: [4.0, 4.0, 0.2])
-        let glowMaterial = SimpleMaterial(color: .systemCyan.withAlphaComponent(0.7), roughness: 0.1, isMetallic: false)
-        let glowModel = ModelEntity(mesh: glowRing, materials: [glowMaterial])
-        glowModel.position = SIMD3<Float>(0, 3, 0)  // At pin head level
-
-        pinNode.addChild(pinHeadModel)
-        pinNode.addChild(shaftModel)
-        pinNode.addChild(pointModel)
-        pinNode.addChild(glowModel)
+        pinNode.addChild(poleModel)
+        pinNode.addChild(flagModel)
 
         return pinNode
     }
