@@ -36,10 +36,8 @@
 ## Core Feature Improvements
 
 - [ ] **Create onboarding tutorial**
-  - First-launch walkthrough
-  - Explain how to use the beacon
-  - Show AR view capabilities
-  - Location permission explanation
+  - First-launch walkthrough explaining core features (search, pin drop, AR).
+  - Add a pre-permission dialog to explain *why* location permission is needed before the system prompt.
 
 - [ ] **Add ability to save favorite/recent locations**
   - Persistent storage (UserDefaults or CoreData)
@@ -65,6 +63,11 @@
   - Various coordinate formats (DMS, DDM, etc.)
 
 ## User Experience Enhancements
+
+- [ ] **Visual design review and polish**
+  - Establish a consistent color palette and theme.
+  - Refine button styles and add more interactivity (e.g., animations on tap).
+  - Redesign the destination info card for a more modern look.
 
 - [ ] **Improve AR beacon with animation**
   - Pulsing effect for visibility

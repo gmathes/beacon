@@ -19,6 +19,7 @@
 		C9A6CFF6296BC52B00093D3C /* beaconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFF5296BC52B00093D3C /* beaconTests.swift */; };
 		C9A6D000296BC52B00093D3C /* beaconUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6CFFF296BC52B00093D3C /* beaconUITests.swift */; };
 		C9A6D002296BC52B00093D3C /* beaconUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A6D001296BC52B00093D3C /* beaconUITestsLaunchTests.swift */; };
+		C9B256FD2ECD6528000A972F /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B256FC2ECD6528000A972F /* PrivacyPolicyView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		C9A6CFFB296BC52B00093D3C /* beaconUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = beaconUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9A6CFFF296BC52B00093D3C /* beaconUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beaconUITests.swift; sourceTree = "<group>"; };
 		C9A6D001296BC52B00093D3C /* beaconUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = beaconUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C9B256FC2ECD6528000A972F /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PrivacyPolicyView.swift; path = beacon/PrivacyPolicyView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 		C9A6CFD6296BC52900093D3C = {
 			isa = PBXGroup;
 			children = (
+				C9B256FC2ECD6528000A972F /* PrivacyPolicyView.swift */,
 				C9A6CFE1296BC52900093D3C /* beacon */,
 				C9A6CFF4296BC52B00093D3C /* beaconTests */,
 				C9A6CFFE296BC52B00093D3C /* beaconUITests */,
@@ -291,6 +294,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9B256FD2ECD6528000A972F /* PrivacyPolicyView.swift in Sources */,
 				C914F0BC29A4315900D20C02 /* ARView.swift in Sources */,
 				C9A6CFE5296BC52900093D3C /* ContentView.swift in Sources */,
 				C9A6CFE3296BC52900093D3C /* AppDelegate.swift in Sources */,
@@ -462,6 +466,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Beacon AR Navigator";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -496,6 +501,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Beacon AR Navigator";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Beacon AR Navigator uses the camera to display augmented reality views showing the direction and distance to your selected destination.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon AR Navigator needs your location to calculate the distance and direction to your destination and to show your position on the map.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
