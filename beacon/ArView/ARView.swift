@@ -178,10 +178,13 @@ struct ARPinView: View {
 
     // Helper functions for formatting
     private func formatDistance(_ distance: Double) -> String {
-        if distance < 1000 {
-            return "\(Int(distance))m"
+        let feet = distance * 3.28084 // Convert meters to feet
+
+        if feet < 1000 {
+            return "\(Int(feet))ft"
         } else {
-            return String(format: "%.1fkm", distance / 1000)
+            let miles = feet / 5280 // Convert feet to miles
+            return String(format: "%.1fmi", miles)
         }
     }
 
@@ -204,11 +207,12 @@ struct ARPinView: View {
     }
     
     private func distanceLabel(_ distance: Double) -> String {
-        if distance < 100 {
+        let feet = distance * 3.28084 // Convert meters to feet
+        if feet < 300 {
             return "Very Close"
-        } else if distance < 500 {
+        } else if feet < 1500 {
             return "Close"
-        } else if distance < 1000 {
+        } else if feet < 3000 {
             return "Medium Distance"
         } else {
             return "Far"

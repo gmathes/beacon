@@ -34,6 +34,7 @@ struct MapView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: MKMapView, context: Context) {
+        // Annotation management should happen regardless of region changes
         view.removeAnnotations(view.annotations)
         view.addAnnotation(annotation)
 
@@ -43,25 +44,37 @@ struct MapView: UIViewRepresentable {
         }
         
         var coordinateChangedToDefault = false
+        var coordinateChangedToNew = false
+
         if let last = context.coordinator.lastCoordinate {
-            if (last.latitude != coordinate.latitude || last.longitude != coordinate.longitude) &&
-               coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
-                coordinateChangedToDefault = true
+            if (last.latitude != coordinate.latitude || last.longitude != coordinate.longitude) {
+                if coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
+                    coordinateChangedToDefault = true
+                } else {
+                    coordinateChangedToNew = true
+                }
             }
         } else { // first run
             if coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
                 coordinateChangedToDefault = true
+            } else {
+                coordinateChangedToNew = true
             }
         }
         
         if isRecenter, let userLocation = userLocation {
+            // Recenter wins
             view.setRegion(MKCoordinateRegion(center: userLocation, latitudinalMeters: 1000, longitudinalMeters: 1000), animated: true)
         } else if coordinateChangedToDefault {
+            // Then reset to global
             let coordinateRegion = MKCoordinateRegion(
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 180, longitudeDelta: 360))
             view.setRegion(coordinateRegion, animated: true)
-            view.removeAnnotations(view.annotations)
+        } else if coordinateChangedToNew {
+            // Then new destination
+            let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 5000, longitudinalMeters: 5000)
+            view.setRegion(region, animated: true)
         }
 
         context.coordinator.lastCoordinate = coordinate
@@ -153,19 +166,9 @@ struct MapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
             if let annotationView = views.first {
+                // Just select the annotation, don't set the region
                 annotationView.setSelected(true, animated: true)
-                if let annotation = annotationView.annotation {
-                    if annotation.coordinate.latitude != -0.0 {
-                        var meters = 5000.0
-                        if annotation.title == "Dropped pin" {
-                            meters = 1000.0
-                        }
-                        let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: meters, longitudinalMeters: meters)
-                        mapView.setRegion(region, animated: true)
-                    }
-                }
             }
-            
         }
     }
 }
