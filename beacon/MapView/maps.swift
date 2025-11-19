@@ -36,23 +36,36 @@ struct MapView: UIViewRepresentable {
     func updateUIView(_ view: MKMapView, context: Context) {
         view.removeAnnotations(view.annotations)
         view.addAnnotation(annotation)
-        if coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
+
+        let isRecenter = context.coordinator.lastRecenterTrigger != recenterTrigger
+        if isRecenter {
+            context.coordinator.lastRecenterTrigger = recenterTrigger
+        }
+        
+        var coordinateChangedToDefault = false
+        if let last = context.coordinator.lastCoordinate {
+            if (last.latitude != coordinate.latitude || last.longitude != coordinate.longitude) &&
+               coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
+                coordinateChangedToDefault = true
+            }
+        } else { // first run
+            if coordinate.latitude == 43.0 && coordinate.longitude == -89.0 {
+                coordinateChangedToDefault = true
+            }
+        }
+        
+        if isRecenter, let userLocation = userLocation {
+            view.setRegion(MKCoordinateRegion(center: userLocation, latitudinalMeters: 1000, longitudinalMeters: 1000), animated: true)
+        } else if coordinateChangedToDefault {
             let coordinateRegion = MKCoordinateRegion(
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 180, longitudeDelta: 360))
-           view.setRegion(coordinateRegion, animated: true)
-           view.removeAnnotations(view.annotations)
+            view.setRegion(coordinateRegion, animated: true)
+            view.removeAnnotations(view.annotations)
         }
 
-        // Handle recenter trigger
-        if context.coordinator.lastRecenterTrigger != recenterTrigger {
-            context.coordinator.lastRecenterTrigger = recenterTrigger
-            if let userLocation = view.userLocation.location?.coordinate {
-                let region = MKCoordinateRegion(center: userLocation, latitudinalMeters: 1000, longitudinalMeters: 1000)
-                view.setRegion(region, animated: true)
-            }
-        }
-  }
+        context.coordinator.lastCoordinate = coordinate
+    }
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -60,10 +73,13 @@ struct MapView: UIViewRepresentable {
 
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: MapView
-        var lastRecenterTrigger: Bool = false
+        var lastRecenterTrigger: Bool
+        var lastCoordinate: CLLocationCoordinate2D?
 
         init(_ parent: MapView) {
             self.parent = parent
+            self.lastRecenterTrigger = parent.recenterTrigger
+            self.lastCoordinate = nil
         }
 
         @objc func mapLongPressed(gestureRecognizer: UIGestureRecognizer) {

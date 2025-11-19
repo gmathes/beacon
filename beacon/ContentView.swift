@@ -49,7 +49,7 @@ struct ContentView: View {
                 }
 
                 // Selected destination info card
-                if hasSelectedDestination, let userLoc = userLocation {
+                if hasSelectedDestination, let userLoc = userLocation, !showAddressSearch {
                     VStack {
                         Spacer()
                         VStack(alignment: .leading, spacing: 8) {
@@ -164,6 +164,7 @@ struct ContentView: View {
                     Spacer()
                 }
 
+                if !showAddressSearch {
                     HStack(spacing: 16) {
                         Button(action: {
                             self.showAddressSearch = true
@@ -176,7 +177,9 @@ struct ContentView: View {
                                 .clipShape(Circle())
                         }
                         Button(action: {
-                            recenterTrigger.toggle()
+                            if userLocation != nil {
+                                recenterTrigger.toggle()
+                            }
                         }) {
                             Image(systemName: "location.fill")
                                 .font(.system(size: 20))
@@ -227,24 +230,27 @@ struct ContentView: View {
                         }
                     }
                     .padding(.top, 80)
-            HStack {
-                Spacer()
-                VStack {
+                }
+            if !showAddressSearch {
+                HStack {
                     Spacer()
-                    if hasSelectedDestination {
-                        Button(action: {
-                            showARView = true
-                        }) {
-                            HStack {
-                                Image(systemName: "location.north.circle.fill")
-                                Text("Show Beacon")
+                    VStack {
+                        Spacer()
+                        if hasSelectedDestination {
+                            Button(action: {
+                                showARView = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "location.north.circle.fill")
+                                    Text("Show Beacon")
+                                }
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(25)
                             }
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.green)
-                            .cornerRadius(25)
+                            .shadow(radius: 5)
                         }
-                        .shadow(radius: 5)
                     }
                 }
             }
