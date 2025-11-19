@@ -25,6 +25,7 @@ struct ContentView: View {
     @StateObject private var locationPermissionManager = LocationPermissionManager()
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
+    @State private var showPrivacyPolicy = false
 
     var body: some View {
         NavigationStack {
@@ -228,6 +229,16 @@ struct ContentView: View {
                                 .background(Color.blue)
                                 .clipShape(Circle())
                         }
+                        Button(action: {
+                            showPrivacyPolicy = true
+                        }) {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white)
+                                .padding(16)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                        }
                     }
                     .padding(.top, 80)
                 }
@@ -254,6 +265,9 @@ struct ContentView: View {
                     }
                 }
             }
+            }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                PrivacyPolicyView()
             }
             .navigationDestination(isPresented: $showARView) {
                 ARPinView(destinationLocation: $coordinate)
