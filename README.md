@@ -2,6 +2,8 @@
 
 An iOS augmented reality navigation app that shows destination locations on the horizon using ARKit.
 
+On the Apple app store (in 2026): https://apps.apple.com/us/app/beacon-ar-navigator/id6755455519
+
 ## Overview
 
 Beacon helps you visualize the location and distance of destinations in the real world. Select a location on the map, then use AR mode to see an indicator showing the direction and distance on your device's camera view.

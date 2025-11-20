@@ -249,7 +249,7 @@ struct ARViewContainer: UIViewRepresentable {
 
         // Create a flag shape
         // Flagpole (tall, thin cylinder)
-        let pole = MeshResource.generateCylinder(height: 10.0, radius: 0.2)
+        let pole = MeshResource.generateCylinder(height: 20.0, radius: 0.2)
         let poleMaterial = SimpleMaterial(color: .systemGray, roughness: 0.3, isMetallic: true)
         let poleModel = ModelEntity(mesh: pole, materials: [poleMaterial])
         poleModel.position = SIMD3<Float>(0, 0, 0)
@@ -258,7 +258,7 @@ struct ARViewContainer: UIViewRepresentable {
         let flag = MeshResource.generateBox(size: [5.0, 3.0, 0.1])
         let flagMaterial = SimpleMaterial(color: .systemRed, roughness: 0.1, isMetallic: false)
         let flagModel = ModelEntity(mesh: flag, materials: [flagMaterial])
-        flagModel.position = SIMD3<Float>(2.5, 3.5, 0) // Positioned at the top of the pole
+        flagModel.position = SIMD3<Float>(2.5, 8.5, 0) // Positioned at the top of the pole
 
         pinNode.addChild(poleModel)
         pinNode.addChild(flagModel)
