@@ -32,6 +32,7 @@ struct ContentView: View {
             ZStack(alignment: .top) {
                 MapView(coordinate: $coordinate, annotation: $annotation, recenterTrigger: $recenterTrigger, userLocation: $userLocation, destinationName: $destinationName, hasSelectedDestination: $hasSelectedDestination, errorMessage: $errorMessage, showErrorAlert: $showErrorAlert, onMapTapped: {
                     showAddressSearch = false
+                    mapSearch.searchTerm = ""
                 })
                     .edgesIgnoringSafeArea(.all)
 
@@ -306,6 +307,7 @@ extension ContentView {
                     self.annotation = MKPointAnnotation()
                     self.hasSelectedDestination = false
                     self.destinationName = ""
+                    self.mapSearch.searchTerm = ""
                 }) {
                     Image(systemName: "gobackward")
                         .font(.system(size: 20))

@@ -36,7 +36,9 @@ struct MapView: UIViewRepresentable {
     func updateUIView(_ view: MKMapView, context: Context) {
         // Annotation management should happen regardless of region changes
         view.removeAnnotations(view.annotations)
-        view.addAnnotation(annotation)
+        if hasSelectedDestination {
+            view.addAnnotation(annotation)
+        }
 
         let isRecenter = context.coordinator.lastRecenterTrigger != recenterTrigger
         if isRecenter {
@@ -178,9 +180,7 @@ class MapSearch : NSObject, ObservableObject {
     @Published var searchTerm = ""
     
     private var cancellables : Set<AnyCancellable> = []
-    
     private var searchCompleter = MKLocalSearchCompleter()
-    private var currentPromise : ((Result<[MKLocalSearchCompletion], Error>) -> Void)?
     
     override init() {
         super.init()
@@ -189,34 +189,29 @@ class MapSearch : NSObject, ObservableObject {
         $searchTerm
             .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
             .removeDuplicates()
-            .flatMap({ (currentSearchTerm) in
-                self.searchTermToResults(searchTerm: currentSearchTerm)
-            })
-            .sink(receiveCompletion: { (completion) in
-                if case .failure(let error) = completion {
-                    print("Error searching for location: \(error.localizedDescription)")
+            .sink { [weak self] term in
+                guard let self = self else { return }
+                if term.isEmpty {
+                    self.locationResults = []
+                } else {
+                    self.searchCompleter.queryFragment = term
                 }
-            }, receiveValue: { (results) in
-                self.locationResults = results
-            })
+            }
             .store(in: &cancellables)
-    }
-    
-    func searchTermToResults(searchTerm: String) -> Future<[MKLocalSearchCompletion], Error> {
-        Future { promise in
-            self.searchCompleter.queryFragment = searchTerm
-            self.currentPromise = promise
-        }
     }
 }
 
 extension MapSearch : MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-            currentPromise?(.success(completer.results))
+        DispatchQueue.main.async {
+            self.locationResults = completer.results
         }
+    }
     
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-        currentPromise?(.failure(error))
+        DispatchQueue.main.async {
+            print("Error searching for location: \(error.localizedDescription)")
+        }
     }
 }
 

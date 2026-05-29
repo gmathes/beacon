@@ -3,6 +3,7 @@ import RealityKit
 import ARKit
 import MapKit
 import CoreLocation
+import Combine
 
 // MARK: - ARSessionManager
 class ARSessionManager: NSObject, ObservableObject, ARSessionDelegate {
@@ -106,10 +107,16 @@ struct ARPinView: View {
                 .foregroundColor(distanceColor(locationDelegate.distance))
                 .shadow(color: .black, radius: 2, x: 0, y: 1)
 
-            Text("\(Int(locationDelegate.bearing))° \(bearingToDirection(locationDelegate.bearing))")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white)
-                .shadow(color: .black, radius: 2, x: 0, y: 1)
+            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                Text("\(Int(locationDelegate.bearing))° \(bearingToDirection(locationDelegate.bearing))")
+                    .font(.system(size: 16, weight: .medium))
+                
+                Text(String(format: "(Mag: %+.1f°)", locationDelegate.magneticDeclination))
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .foregroundColor(.white)
+            .shadow(color: .black, radius: 2, x: 0, y: 1)
 
             Text(distanceLabel(locationDelegate.distance))
                 .font(.system(size: 12, weight: .regular))
@@ -227,6 +234,14 @@ struct ARViewContainer: UIViewRepresentable {
     let destinationLocation: CLLocationCoordinate2D
     @ObservedObject var arSessionManager: ARSessionManager
 
+    class Coordinator {
+        var subscription: AnyCancellable?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         arView.session = arSessionManager.session
@@ -235,6 +250,11 @@ struct ARViewContainer: UIViewRepresentable {
         let pinNode = makePinNode()
         arView.scene.addAnchor(pinNode)
 
+        // Subscribe to scene updates to update the billboard effect every frame
+        context.coordinator.subscription = arView.scene.subscribe(to: SceneEvents.Update.self) { _ in
+            self.updateFlagOrientation(in: arView)
+        }
+
         return arView
     }
 
@@ -242,6 +262,21 @@ struct ARViewContainer: UIViewRepresentable {
         if let anchor = uiView.scene.anchors.first {
             anchor.transform.translation = pinPosition
         }
+    }
+    
+    private func updateFlagOrientation(in arView: ARView) {
+        guard let anchor = arView.scene.anchors.first else { return }
+        
+        // Billboard effect: Make the flag face the camera
+        let cameraPosition = arView.cameraTransform.translation
+        let anchorPosition = anchor.transform.translation
+        
+        // To keep the pole vertical, we only rotate around the Y axis.
+        var targetPosition = cameraPosition
+        targetPosition.y = anchorPosition.y
+        
+        // look(at:) points the -Z axis of the entity at the target.
+        anchor.look(at: targetPosition, from: anchorPosition, relativeTo: nil)
     }
     
     private func makePinNode() -> AnchorEntity {
@@ -273,6 +308,7 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var distance: Double = 0
     @Published var bearing: Double = 0
     @Published var headingAccuracy: Double = 0
+    @Published var magneticDeclination: Double = 0
 
     private let locationManager = CLLocationManager()
     var destinationLocation: CLLocationCoordinate2D = CLLocationCoordinate2D()
@@ -313,6 +349,15 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         currentHeading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
         headingAccuracy = newHeading.headingAccuracy
+
+        if newHeading.trueHeading >= 0 {
+            // Magnetic declination is the difference between true north and magnetic north
+            var declination = newHeading.trueHeading - newHeading.magneticHeading
+            // Normalize to -180 to 180
+            if declination > 180 { declination -= 360 }
+            if declination < -180 { declination += 360 }
+            magneticDeclination = declination
+        }
 
         if let userLocation = locationManager.location {
             updatePinPosition(userLocation: userLocation)
