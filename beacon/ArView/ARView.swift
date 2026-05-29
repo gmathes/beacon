@@ -59,8 +59,12 @@ struct ARPinView: View {
             )
             .edgesIgnoringSafeArea(.all)
 
-            // AR Overlay with distance and bearing info
-            VStack {
+            // AR Overlay
+            VStack(spacing: 0) {
+                // Compass Ribbon at top
+                CompassRibbon(heading: locationDelegate.currentHeading)
+                    .padding(.top, 50)
+                
                 if locationDelegate.distance > 0 {
                     arInfoOverlay
                 }
@@ -81,6 +85,14 @@ struct ARPinView: View {
             
             let configuration = ARWorldTrackingConfiguration()
             configuration.worldAlignment = .gravityAndHeading
+            
+            // Enable occlusion if supported
+            if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+                configuration.frameSemantics.insert(.sceneDepth)
+            } else if ARWorldTrackingConfiguration.supportsFrameSemantics(.personSegmentationWithDepth) {
+                configuration.frameSemantics.insert(.personSegmentationWithDepth)
+            }
+            
             arSessionManager.session.run(configuration)
         }
         .onDisappear {
@@ -228,6 +240,77 @@ struct ARPinView: View {
 }
 
 
+// MARK: - CompassRibbon
+struct CompassRibbon: View {
+    let heading: Double
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let segmentWidth: CGFloat = 2.0 // Pixels per degree
+            
+            ZStack {
+                // Background
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.5))
+                    .frame(height: 44)
+                
+                // Markers
+                HStack(spacing: 0) {
+                    // Render markers for -180 to 540 to handle wrapping
+                    ForEach(-180..<540, id: \.self) { degree in
+                        if degree % 5 == 0 {
+                            VStack(spacing: 2) {
+                                Rectangle()
+                                    .fill(Color.white.opacity(degree % 15 == 0 ? 0.9 : 0.4))
+                                    .frame(width: 1, height: degree % 45 == 0 ? 16 : 8)
+                                
+                                if degree % 45 == 0 {
+                                    Text(markerLabel((degree + 360) % 360))
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .frame(width: segmentWidth * 5)
+                        }
+                    }
+                }
+                // Center the current heading
+                .offset(x: (width / 2) - (CGFloat(heading) * segmentWidth))
+                
+                // Center pointer
+                VStack(spacing: 0) {
+                    Image(systemName: "triangle.fill")
+                        .resizable()
+                        .frame(width: 12, height: 8)
+                        .foregroundColor(.red)
+                        .rotationEffect(.degrees(180))
+                    Spacer()
+                }
+                .frame(height: 44)
+                .padding(.top, 2)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .frame(height: 60)
+        .padding(.horizontal, 20)
+    }
+    
+    private func markerLabel(_ degree: Int) -> String {
+        switch degree {
+        case 0: return "N"
+        case 45: return "NE"
+        case 90: return "E"
+        case 135: return "SE"
+        case 180: return "S"
+        case 225: return "SW"
+        case 270: return "W"
+        case 315: return "NW"
+        default: return "\(degree)°"
+        }
+    }
+}
+
 // MARK: - ARViewContainer
 struct ARViewContainer: UIViewRepresentable {
     @Binding var pinPosition: SIMD3<Float>
@@ -251,9 +334,10 @@ struct ARViewContainer: UIViewRepresentable {
         arView.scene.addAnchor(pinNode)
 
         // Subscribe to scene updates to update the billboard effect every frame
-        context.coordinator.subscription = arView.scene.subscribe(to: SceneEvents.Update.self) { _ in
+        let subscription = arView.scene.subscribe(to: SceneEvents.Update.self) { _ in
             self.updateFlagOrientation(in: arView)
         }
+        context.coordinator.subscription = AnyCancellable(subscription)
 
         return arView
     }
@@ -277,6 +361,13 @@ struct ARViewContainer: UIViewRepresentable {
         
         // look(at:) points the -Z axis of the entity at the target.
         anchor.look(at: targetPosition, from: anchorPosition, relativeTo: nil)
+        
+        // Pulsing animation for the flag
+        if let flagModel = anchor.findEntity(named: "flag") {
+            let time = Float(Date().timeIntervalSince1970)
+            let scale = 1.0 + 0.1 * sin(time * 3.0) // Pulse between 0.9 and 1.1
+            flagModel.scale = SIMD3<Float>(repeating: scale)
+        }
     }
     
     private func makePinNode() -> AnchorEntity {
@@ -287,16 +378,25 @@ struct ARViewContainer: UIViewRepresentable {
         let pole = MeshResource.generateCylinder(height: 20.0, radius: 0.2)
         let poleMaterial = SimpleMaterial(color: .systemGray, roughness: 0.3, isMetallic: true)
         let poleModel = ModelEntity(mesh: pole, materials: [poleMaterial])
-        poleModel.position = SIMD3<Float>(0, 0, 0)
+        poleModel.position = SIMD3<Float>(0, 10, 0) // Adjusted to start from ground
 
         // Flag (thin box)
         let flag = MeshResource.generateBox(size: [5.0, 3.0, 0.1])
         let flagMaterial = SimpleMaterial(color: .systemRed, roughness: 0.1, isMetallic: false)
         let flagModel = ModelEntity(mesh: flag, materials: [flagMaterial])
-        flagModel.position = SIMD3<Float>(2.5, 8.5, 0) // Positioned at the top of the pole
+        flagModel.position = SIMD3<Float>(2.5, 18.5, 0) // Positioned at the top of the pole
+        flagModel.name = "flag" // Name it for easier access later
+
+        // Light Beam (tall, semi-transparent unlit cylinder)
+        let beam = MeshResource.generateCylinder(height: 1000.0, radius: 0.5)
+        var beamMaterial = UnlitMaterial(color: .white)
+        beamMaterial.blending = .transparent(opacity: .init(floatLiteral: 0.3))
+        let beamModel = ModelEntity(mesh: beam, materials: [beamMaterial])
+        beamModel.position = SIMD3<Float>(0, 500, 0) // Centered tall cylinder
 
         pinNode.addChild(poleModel)
         pinNode.addChild(flagModel)
+        pinNode.addChild(beamModel)
 
         return pinNode
     }
@@ -309,10 +409,10 @@ class LocationDelegate: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var bearing: Double = 0
     @Published var headingAccuracy: Double = 0
     @Published var magneticDeclination: Double = 0
+    @Published var currentHeading: Double = 0
 
     private let locationManager = CLLocationManager()
     var destinationLocation: CLLocationCoordinate2D = CLLocationCoordinate2D()
-    private var currentHeading: Double = 0
     var onError: ((Error) -> Void)?
 
     override init() {
